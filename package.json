@@ -1,0 +1,35 @@
+{
+  "name": "@hydrophobefireman/flask-jwt-jskit",
+  "version": "1.9.0",
+  "description": "",
+  "main": "dist/flask-jwt-jskit.modern.js",
+  "scripts": {
+    "build": "npm run build:minify",
+    "build:minify": "microbundle src/index.ts -o ./dist -f modern,umd --target web --raw true  --tsconfig tsconfig.json",
+    "build:no-minify": "microbundle src/index.ts --compress false -o ./dist -f modern --target web --raw true  --tsconfig tsconfig.json",
+    "dev": "microbundle watch src/index.ts -o ./dist -f modern --raw  true --target web --tsconfig tsconfig.json",
+    "output": "yarn build:no-minify &&  yarn postbuild",
+    "prebuild": "node build_scripts/prebuild.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hydrophobefireman/flask-jwt-jskit.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hydrophobefireman/flask-jwt-jskit/issues"
+  },
+  "module": "dist/flask-jwt-jskit.modern.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "homepage": "https://github.com/Hydrophobefireman/flask-jwt-jskit#readme",
+  "devDependencies": {
+    "microbundle": "^0.13.0",
+    "typescript": "^4.2.4"
+  },
+  "peerDependencies": {
+    "statedrive": "^0.0.12",
+    "@hydrophobefireman/j-utils": "^2.1.6"
+  },
+  "dependencies": {}
+}
