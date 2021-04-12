@@ -63,7 +63,7 @@ export class Bridge<T extends { user: string }> {
     const { result } = cl.get<{ user_data: T }>(
       this._routes.initialAuthCheckRoute
     );
-    result.then((js) => {
+    return result.then((js) => {
       if (js.data && js.data.user_data) {
         this.updateState(js.data.user_data);
       }
