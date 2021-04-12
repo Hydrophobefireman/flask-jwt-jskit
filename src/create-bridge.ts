@@ -1,5 +1,6 @@
 import {
   createState,
+  get,
   set,
   State,
   useSharedState,
@@ -30,7 +31,9 @@ export class Bridge<T extends { user: string }> {
   updateState(s: T) {
     set(this._state, s);
   }
-
+  getState(): T {
+    return get(this._state);
+  }
   login(user: string, password: string) {
     if (!this._client) throw new Error("No HTTP Client created!");
     if (!this._routes || !this._routes.loginRoute)
