@@ -12,27 +12,31 @@ import { clear } from "./idb";
 export class Bridge<T extends { user: string }> {
   private readonly _state: State<T>;
   private _client: ReturnType<typeof createClient>;
-  private _loginRoute: string;
-  private _refreshTokenRoute: string;
+
+  _routes: Routes;
   private _onLogout: () => void;
 
   constructor(authType: T) {
     this._state = createState({ initialValue: authType });
   }
-  setRoutes({ loginRoute, refreshTokenRoute }: Routes) {
-    this._loginRoute = loginRoute;
-    this._refreshTokenRoute = refreshTokenRoute;
+  setRoutes(r: Routes) {
+    this._routes = r;
   }
 
   onLogout(cb: () => void) {
     this._onLogout = cb;
   }
 
+  updateState(s: T) {
+    set(this._state, s);
+  }
+
   login(user: string, password: string) {
     if (!this._client) throw new Error("No HTTP Client created!");
-    if (!this._loginRoute) throw new Error("No login route found!");
+    if (!this._routes || !this._routes.loginRoute)
+      throw new Error("No login route found!");
     const obj = { user, password };
-    const request = this._client.postJSON(this._loginRoute, obj);
+    const request = this._client.postJSON(this._routes.loginRoute, obj);
     const { controller, result, headers } = request;
     return {
       controller,
@@ -46,6 +50,21 @@ export class Bridge<T extends { user: string }> {
       }),
       headers,
     };
+  }
+
+  syncWithServer() {
+    if (!this._routes || !this._routes.initialAuthCheckRoute) {
+      throw new Error("Auth check route not found!");
+    }
+    const cl = this.getHttpClient();
+    const { result } = cl.get<{ user_data: T }>(
+      this._routes.initialAuthCheckRoute
+    );
+    result.then((js) => {
+      if (js.data && js.data.user_data) {
+        this.updateState(js.data.user_data);
+      }
+    });
   }
 
   logout() {
@@ -67,9 +86,10 @@ export class Bridge<T extends { user: string }> {
   }
 
   getHttpClient() {
-    if (!this._refreshTokenRoute)
+    if (this._client) return this._client;
+    if (!this._routes || !this._routes.refreshTokenRoute)
       throw new Error("No refresh token route found!");
-    this._client = createClient(this._refreshTokenRoute);
+    this._client = createClient(this._routes.refreshTokenRoute);
     return this._client;
   }
 }

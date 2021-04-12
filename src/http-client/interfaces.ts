@@ -16,4 +16,7 @@ export interface FetchResponse {
 export interface Routes {
   loginRoute: string;
   refreshTokenRoute: string;
+  initialAuthCheckRoute: string;
 }
+
+export {};
