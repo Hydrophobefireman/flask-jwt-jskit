@@ -45,7 +45,7 @@ export class Bridge<T extends { user: string }> {
       controller,
       result: result.then((resp) => {
         const js: any = resp.data;
-        const data = js && js.user_data;
+        const data = (resp as any).user_data || (js && js.user_data);
         if (data) {
           set(this._state, data);
         }
