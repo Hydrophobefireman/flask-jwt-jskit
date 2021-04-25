@@ -1,6 +1,15 @@
-import { AbortableFetchResponse } from "./interfaces";
 import { _awaitData, _headers } from "./util";
-import { _get, _getBinary, _postBinary, _postJSON } from "./methods";
+import {
+  _del,
+  _get,
+  _getBinary,
+  _patchJSON,
+  _postBinary,
+  _postJSON,
+  _putJSON,
+} from "./methods";
+
+import { AbortableFetchResponse } from "./interfaces";
 
 export function createClient(refreshAuthToken: string) {
   const wrap = <T extends Array<any>, U>(fn: (...args: T) => U) => {
@@ -30,7 +39,18 @@ export function createClient(refreshAuthToken: string) {
 
   const get = wrap(_get);
   const postJSON = wrap(_postJSON);
+  const patchJSON = wrap(_patchJSON);
+  const putJSON = wrap(_putJSON);
+  const del = wrap(_del);
   const getBinary = wrap(_getBinary);
   const postBinary = wrap(_postBinary);
-  return { get, postJSON, getBinary, postBinary };
+  return {
+    get,
+    postJSON,
+    getBinary,
+    postBinary,
+    patchJSON,
+    putJSON,
+    del,
+  };
 }

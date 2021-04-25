@@ -1,4 +1,5 @@
 import { AbortableFetchResponse, FetchResponse } from "./interfaces";
+
 import { Object_assign } from "@hydrophobefireman/j-utils";
 import { _awaitData } from "./util";
 
@@ -30,22 +31,40 @@ export function _get<T = {}>(
   return response;
 }
 
-export function _postJSON<T = {}>(
+export function _del<T = {}>(
   url: string,
-  body: object,
   headers?: Record<string, string>,
   options?: RequestInit
 ) {
   options = Object_assign({}, options || {}, {
-    body: JSON.stringify(body),
-    method: "post",
-    headers: Object_assign(
-      { "content-type": "application/json" },
-      headers || (options && (options.headers as object)) || {}
-    ),
+    method: "DELETE",
+    headers: headers || (options && (options.headers as object)) || {},
   });
-  return _prepareFetch<T>(url, options);
+  const response = _prepareFetch<T>(url, options);
+
+  return response;
 }
+function _sendJSON(method: "POST" | "PATCH" | "PUT") {
+  return function <T = {}>(
+    url: string,
+    body: object,
+    headers?: Record<string, string>,
+    options?: RequestInit
+  ) {
+    options = Object_assign({}, options || {}, {
+      body: JSON.stringify(body),
+      method,
+      headers: Object_assign(
+        { "content-type": "application/json" },
+        headers || (options && (options.headers as object)) || {}
+      ),
+    });
+    return _prepareFetch<T>(url, options);
+  };
+}
+export const _postJSON = _sendJSON("POST");
+export const _patchJSON = _sendJSON("PATCH");
+export const _putJSON = _sendJSON("PUT");
 
 export function _getBinary(
   url: string,

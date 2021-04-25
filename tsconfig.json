@@ -7,5 +7,6 @@
     "target": "ESNext",
     "rootDir": "./src",
     "moduleResolution": "node"
-  }
+  },
+  "exclude": ["dist/**/*"]
 }

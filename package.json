@@ -1,6 +1,6 @@
 {
   "name": "@hydrophobefireman/flask-jwt-jskit",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/flask-jwt-jskit.modern.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "typescript": "^4.2.4"
   },
   "peerDependencies": {
-    "statedrive": "^0.0.12",
-    "@hydrophobefireman/j-utils": "^2.1.6"
+    "@hydrophobefireman/j-utils": "^2.1.6",
+    "statedrive": "^0.0.12"
   },
   "dependencies": {}
 }
