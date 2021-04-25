@@ -11,7 +11,10 @@ import {
 
 import { AbortableFetchResponse } from "./interfaces";
 
-export function createClient(refreshAuthToken: string) {
+export function createClient(
+  refreshAuthToken: string,
+  onAuthError: () => void
+) {
   const wrap = <T extends Array<any>, U>(fn: (...args: T) => U) => {
     function wrapped(...args: T): U;
     function wrapped(): U {
@@ -25,6 +28,9 @@ export function createClient(refreshAuthToken: string) {
             return _get(refreshAuthToken).result.then((x) =>
               x.error ? x : fn.apply(null, args).result
             );
+          }
+          if (js.error == "re-auth") {
+            return onAuthError();
           }
           return js;
         }),

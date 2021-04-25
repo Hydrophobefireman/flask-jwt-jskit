@@ -1,14 +1,15 @@
 import {
+  State,
   createState,
   get,
   set,
-  State,
   useSharedState,
   useSharedStateValue,
 } from "statedrive";
-import { createClient } from "./http-client";
+
 import { Routes } from "./http-client/interfaces";
 import { clear } from "./idb";
+import { createClient } from "./http-client";
 
 export class Bridge<T extends { user: string }> {
   private readonly _state: State<T>;
@@ -92,7 +93,10 @@ export class Bridge<T extends { user: string }> {
     if (this._client) return this._client;
     if (!this._routes || !this._routes.refreshTokenRoute)
       throw new Error("No refresh token route found!");
-    this._client = createClient(this._routes.refreshTokenRoute);
+    this._client = createClient(
+      this._routes.refreshTokenRoute,
+      this.logout.bind(this)
+    );
     return this._client;
   }
 }
