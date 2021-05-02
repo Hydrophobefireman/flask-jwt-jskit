@@ -30,6 +30,5 @@
   "peerDependencies": {
     "@hydrophobefireman/j-utils": "^2.1.7",
     "statedrive": "^0.0.12"
-  },
-  "dependencies": {}
+  }
 }
