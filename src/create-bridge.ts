@@ -10,6 +10,7 @@ import {
 import { Routes } from "./http-client/interfaces";
 import { clear } from "./idb";
 import { createClient } from "./http-client";
+import { getAuthenticationHeaders } from "./http-client/util";
 
 export class Bridge<T extends { user: string }> {
   private readonly _state: State<T>;
@@ -56,11 +57,14 @@ export class Bridge<T extends { user: string }> {
     };
   }
 
-  syncWithServer() {
+  async syncWithServer() {
     if (!this._routes || !this._routes.initialAuthCheckRoute) {
       throw new Error("Auth check route not found!");
     }
+    const headers: any = await getAuthenticationHeaders();
+    if (!headers.Authorization) return;
     const cl = this.getHttpClient();
+
     const { result } = cl.get<{ user_data: T }>(
       this._routes.initialAuthCheckRoute
     );

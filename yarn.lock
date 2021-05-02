@@ -913,11 +913,6 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@hydrophobefireman/j-utils@^2.1.6":
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/@hydrophobefireman/j-utils/-/j-utils-2.1.6.tgz#4ddf7e57d53ceae7245c7b907665f98f6f2f30f8"
-  integrity sha512-gwcKHXTsos2KaQisSE/0QxaelhwHL+EnpcyBN9I9oDnQfhqj6D05XPlMGJIuuwn1jiWtd9z8C/bjefEuUQrNng==
-
 "@rollup/plugin-alias@^3.1.1":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-alias/-/plugin-alias-3.1.2.tgz#c585b05be4a7782d269c69d13def56f44e417772"
@@ -3033,13 +3028,6 @@ stable@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.8.tgz#836eb3c8382fe2936feaf544631017ce7d47a3cf"
   integrity sha512-ji9qxRnOVfcuLDySj9qzhGSEFVobyt1kIOSkj1qZzYLzq7Tos/oUUWvotUPQLlrsidqsK6tBH89Bc9kL5zHA6w==
-
-statedrive@^0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/statedrive/-/statedrive-0.0.12.tgz#3b9ea6f04ccbcc7a1935d5d2b9f1e5fa41edceb5"
-  integrity sha512-3We9KdPKKd5EBXaWVKuWqhrqI4qwGf8H7jDE0128w/UbCd16/MCrM/rDpXDAHyLAn7Z5Mcz+1W/uqir0Cp888w==
-  dependencies:
-    "@hydrophobefireman/j-utils" "^2.1.6"
 
 string-hash@^1.1.1:
   version "1.1.3"
