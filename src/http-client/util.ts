@@ -1,6 +1,10 @@
-import { Object_assign } from "@hydrophobefireman/j-utils";
-import { get as idbGet, set as idbSet } from "../idb";
 import { AuthenticationTokens, FetchResponse } from "./interfaces";
+import { get as idbGet, set as idbSet } from "../idb";
+
+import { Object_assign } from "@hydrophobefireman/j-utils";
+
+const ACCESS_TOKEN = "auth_tokens.access";
+const REFRESH_TOKEN = "auth_tokens.refresh";
 
 export const tokens: AuthenticationTokens = {
   accessToken: null,
@@ -10,11 +14,13 @@ export const tokens: AuthenticationTokens = {
 export function _headers(tokens: AuthenticationTokens) {
   return {
     Authorization: `Bearer ${tokens.accessToken}`,
-    "x-refresh-token": tokens.refreshToken,
+    "X-Refresh-Token": tokens.refreshToken,
   };
 }
-const ACCESS_TOKEN = "auth_tokens.access";
-const REFRESH_TOKEN = "auth_tokens.refresh";
+
+export function clearAuthenticationHeaders() {
+  tokens.accessToken = tokens.refreshToken = null;
+}
 
 export const getAuthenticationHeaders = async function () {
   if (tokens && tokens.accessToken && tokens.refreshToken)
@@ -65,7 +71,10 @@ export async function _awaitData<T>(
   } catch (e) {
     if (e instanceof DOMException) return { data: {} };
     console.log(e);
-    data = { error: "a network error occured", data: null };
+    data = {
+      error: "A network error occured.",
+      data: null,
+    };
   }
 
   return { data, headers: response && response.headers };

@@ -10,7 +10,10 @@ import {
 import { Routes } from "./http-client/interfaces";
 import { clear } from "./idb";
 import { createClient } from "./http-client";
-import { getAuthenticationHeaders } from "./http-client/util";
+import {
+  clearAuthenticationHeaders,
+  getAuthenticationHeaders,
+} from "./http-client/util";
 
 export class Bridge<T extends { user: string }> {
   private readonly _state: State<T>;
@@ -78,6 +81,7 @@ export class Bridge<T extends { user: string }> {
   logout() {
     clear();
     set(this._state, null);
+    clearAuthenticationHeaders();
     this._onLogout && this._onLogout();
   }
 
