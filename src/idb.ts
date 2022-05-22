@@ -3,6 +3,7 @@ const fallbackGet = (k: string): unknown => {
   const item = localStorage.getItem(FALLBACK_LOCAL_STORAGE_KEY);
   return item ? JSON.parse(item)[k] : void 0;
 };
+let isUsingFallbacks = false;
 const fallbackSet = (
   key: string,
   value: object | string | number | Array<unknown> | unknown
@@ -57,6 +58,9 @@ export function get<Type>(
   key: IDBValidKey,
   store = getDefaultStore()
 ): Promise<Type> {
+  if (isUsingFallbacks) {
+    return Promise.resolve(fallbackGet(key as string) as Type);
+  }
   let req: IDBRequest;
   return store
     .__IDBAct__("readonly", (store) => {
@@ -74,6 +78,9 @@ export function set(
   value: unknown,
   store = getDefaultStore()
 ): Promise<void> {
+  if (isUsingFallbacks) {
+    return Promise.resolve(fallbackSet(key as string, value));
+  }
   return store
     .__IDBAct__("readwrite", (store) => {
       store.put(value, key);
@@ -88,6 +95,9 @@ export function del(
   key: IDBValidKey,
   store = getDefaultStore()
 ): Promise<void> {
+  if (isUsingFallbacks) {
+    return Promise.resolve(fallbackSet(key as string, undefined));
+  }
   return store
     .__IDBAct__("readwrite", (store) => {
       store.delete(key);
@@ -99,6 +109,9 @@ export function del(
 }
 
 export function clear(store = getDefaultStore()): Promise<void> {
+  if (isUsingFallbacks) {
+    return Promise.resolve(localStorage.removeItem(FALLBACK_LOCAL_STORAGE_KEY));
+  }
   return store
     .__IDBAct__("readwrite", (store) => {
       store.clear();
@@ -109,5 +122,11 @@ export function clear(store = getDefaultStore()): Promise<void> {
     });
 }
 
-const _logFallback = (arg?: unknown): void =>
+const _logFallback = (arg?: Error): void => {
+  if (arg && arg.name === "QuotaExceededError") {
+    // explicitly handle
+    throw arg;
+  }
+  isUsingFallbacks = true;
   console.log(String(arg) || "using localstorage fallback");
+};
