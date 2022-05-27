@@ -67,7 +67,7 @@ export async function _awaitData<T>(
       responseHeaders.get("x-refresh-token")
     );
 
-    data = type === "none" ? null : await response[type]();
+    data = type === "none" ? {data: null} : await response[type]();
   } catch (e) {
     if (e instanceof DOMException) return {data: {}};
     console.log(e);
