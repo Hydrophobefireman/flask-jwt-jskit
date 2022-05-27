@@ -1,7 +1,7 @@
-import { AuthenticationTokens, FetchResponse } from "./interfaces";
-import { get as idbGet, set as idbSet } from "../idb";
+import {Object_assign} from "@hydrophobefireman/j-utils";
 
-import { Object_assign } from "@hydrophobefireman/j-utils";
+import {get as idbGet, set as idbSet} from "../idb";
+import {AuthenticationTokens, FetchResponse} from "./interfaces";
 
 const ACCESS_TOKEN = "auth_tokens.access";
 const REFRESH_TOKEN = "auth_tokens.refresh";
@@ -50,9 +50,9 @@ export function updateTokens(access: string, refresh: string) {
 export async function _awaitData<T>(
   url: string,
   options?: RequestInit,
-  type?: FetchResponse["type"]
+  type?: FetchResponse["type"] | "none"
 ) {
-  let data: { data: T; error?: string };
+  let data: {data: T; error?: string};
   let response: Response;
   try {
     options.headers = Object_assign(
@@ -67,9 +67,9 @@ export async function _awaitData<T>(
       responseHeaders.get("x-refresh-token")
     );
 
-    data = await response[type]();
+    data = type === "none" ? null : await response[type]();
   } catch (e) {
-    if (e instanceof DOMException) return { data: {} };
+    if (e instanceof DOMException) return {data: {}};
     console.log(e);
     data = {
       error: "A network error occured.",
@@ -77,5 +77,5 @@ export async function _awaitData<T>(
     };
   }
 
-  return { data, headers: response && response.headers };
+  return {data, headers: response && response.headers};
 }

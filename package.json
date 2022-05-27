@@ -2,7 +2,7 @@
   "name": "@hydrophobefireman/flask-jwt-jskit",
   "description": "",
   "types": "dist/src/index.d.ts",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "license": "MIT",
   "homepage": "https://github.com/hydrophobefireman/flask-jwt-jskit#readme",
   "repository": {

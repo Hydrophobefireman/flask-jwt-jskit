@@ -6,7 +6,7 @@ import {_awaitData} from "./util";
 function _prepareFetch<T = {}>(
   url: string,
   options?: RequestInit,
-  type: FetchResponse["type"] = "json"
+  type: FetchResponse["type"] | "none" = "json"
 ) {
   const controller = new AbortController();
   const signal = controller.signal;
@@ -27,7 +27,11 @@ function __bodyless(mode: "HEAD" | "GET" | "DELETE") {
       method: mode,
       headers: headers || (options && (options.headers as object)) || {},
     });
-    const response = _prepareFetch<T>(url, options);
+    const response = _prepareFetch<T>(
+      url,
+      options,
+      mode === "HEAD" ? "none" : "json"
+    );
 
     return response;
   };
