@@ -1,1 +1,10 @@
 docs/
+examples/
+src/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+packages/
+www/
+scripts/
+icon-www/
+tsconfig.json

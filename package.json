@@ -1,34 +1,46 @@
 {
   "name": "@hydrophobefireman/flask-jwt-jskit",
-  "version": "0.1.8",
   "description": "",
-  "main": "dist/flask-jwt-jskit.modern.mjs",
-  "scripts": {
-    "build": "npm run build:minify",
-    "build:minify": "microbundle src/index.ts -o ./dist -f modern,umd --target web --raw true  --tsconfig tsconfig.json",
-    "build:no-minify": "microbundle src/index.ts --compress false -o ./dist -f modern --target web --raw true  --tsconfig tsconfig.json",
-    "dev": "microbundle watch src/index.ts -o ./dist -f modern --raw  true --target web --tsconfig tsconfig.json",
-    "output": "yarn build:no-minify &&  yarn postbuild",
-    "prebuild": "node build_scripts/prebuild.js"
-  },
+  "types": "dist/src/index.d.ts",
+  "version": "0.1.9",
+  "license": "MIT",
+  "homepage": "https://github.com/hydrophobefireman/flask-jwt-jskit#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hydrophobefireman/flask-jwt-jskit.git"
+    "url": "git+https://github.com/hydrophobefireman/flask-jwt-jskit.git"
   },
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Hydrophobefireman/flask-jwt-jskit/issues"
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./package.json": "./package.json"
   },
-  "module": "dist/flask-jwt-jskit.modern.js",
-  "types": "dist/index.d.ts",
+  "scripts": {
+    "prebuild": "node scripts/clean.cjs",
+    "prepublishOnly": "npm run build &&  node scripts/prepublishOnly.cjs",
+    "postpublish": "node scripts/postpublish.cjs",
+    "postbuild": "node scripts/postbuild.cjs",
+    "create-package": "node scripts/create-package.cjs",
+    "build": "tsc",
+    "prepare": "husky install"
+  },
   "sideEffects": false,
-  "homepage": "https://github.com/Hydrophobefireman/flask-jwt-jskit#readme",
-  "devDependencies": {
-    "microbundle": "^0.15.0",
-    "typescript": "^4.6.4"
-  },
   "peerDependencies": {
     "@hydrophobefireman/j-utils": "^2.1.7",
     "statedrive": "^0.0.13"
-  }
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "husky": "^7.0.4",
+    "prettier": "^2.6.2",
+    "pretty-quick": "^3.1.3",
+    "typescript": "^4.6.3"
+  },
+  "libBase": {
+    "exports": {
+      ".": "./dist/src/index.js",
+      "./package.json": "./package.json"
+    }
+  },
+  "libPackages": []
 }
