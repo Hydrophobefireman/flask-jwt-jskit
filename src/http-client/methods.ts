@@ -1,7 +1,7 @@
-import { AbortableFetchResponse, FetchResponse } from "./interfaces";
+import {Object_assign} from "@hydrophobefireman/j-utils";
 
-import { Object_assign } from "@hydrophobefireman/j-utils";
-import { _awaitData } from "./util";
+import {AbortableFetchResponse, FetchResponse} from "./interfaces";
+import {_awaitData} from "./util";
 
 function _prepareFetch<T = {}>(
   url: string,
@@ -12,38 +12,33 @@ function _prepareFetch<T = {}>(
   const signal = controller.signal;
   options.signal = signal;
   const prom = _awaitData(url, options, type);
-  const data = prom.then(({ data }) => data);
-  const headers = prom.then(({ headers }) => headers);
-  return { result: data, controller, headers } as AbortableFetchResponse<T>;
+  const data = prom.then(({data}) => data);
+  const headers = prom.then(({headers}) => headers);
+  return {result: data, controller, headers} as AbortableFetchResponse<T>;
 }
 
-export function _get<T = {}>(
-  url: string,
-  headers?: Record<string, string>,
-  options?: RequestInit
-) {
-  options = Object_assign({}, options || {}, {
-    method: "get",
-    headers: headers || (options && (options.headers as object)) || {},
-  });
-  const response = _prepareFetch<T>(url, options);
+function __bodyless(mode: "HEAD" | "GET" | "DELETE") {
+  return function <T = {}>(
+    url: string,
+    headers?: Record<string, string>,
+    options?: RequestInit
+  ) {
+    options = Object_assign({}, options || {}, {
+      method: mode,
+      headers: headers || (options && (options.headers as object)) || {},
+    });
+    const response = _prepareFetch<T>(url, options);
 
-  return response;
+    return response;
+  };
 }
 
-export function _del<T = {}>(
-  url: string,
-  headers?: Record<string, string>,
-  options?: RequestInit
-) {
-  options = Object_assign({}, options || {}, {
-    method: "DELETE",
-    headers: headers || (options && (options.headers as object)) || {},
-  });
-  const response = _prepareFetch<T>(url, options);
+export const _get = __bodyless("GET");
 
-  return response;
-}
+export const _head = __bodyless("HEAD");
+
+export const _del = __bodyless("DELETE");
+
 function _sendJSON(method: "POST" | "PATCH" | "PUT") {
   return function <T = {}>(
     url: string,
@@ -55,7 +50,7 @@ function _sendJSON(method: "POST" | "PATCH" | "PUT") {
       body: JSON.stringify(body),
       method,
       headers: Object_assign(
-        { "content-type": "application/json" },
+        {"content-type": "application/json"},
         headers || (options && (options.headers as object)) || {}
       ),
     });
@@ -76,7 +71,7 @@ export function _getBinary(
     headers: headers || (options && (options.headers as object)) || {},
   });
   return _prepareFetch<ArrayBuffer>(url, options, "arrayBuffer") as {
-    result: Promise<ArrayBuffer | { error?: string }>;
+    result: Promise<ArrayBuffer | {error?: string}>;
     controller: AbortController;
     headers: Promise<Headers>;
   };

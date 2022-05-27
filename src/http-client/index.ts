@@ -1,15 +1,15 @@
-import { _awaitData, _headers } from "./util";
+import {AbortableFetchResponse} from "./interfaces";
 import {
   _del,
   _get,
   _getBinary,
+  _head,
   _patchJSON,
   _postBinary,
   _postJSON,
   _putJSON,
 } from "./methods";
-
-import { AbortableFetchResponse } from "./interfaces";
+import {_awaitData, _headers} from "./util";
 
 export function createClient(
   refreshAuthToken: string,
@@ -20,7 +20,7 @@ export function createClient(
     function wrapped(): U {
       const args = [].slice.call(arguments);
       const res: AbortableFetchResponse<unknown> = fn.apply(null, args);
-      const resp = ({
+      const resp = {
         controller: res.controller,
 
         result: res.result.then((js) => {
@@ -36,7 +36,7 @@ export function createClient(
         }),
 
         headers: res.headers,
-      } as unknown) as U;
+      } as unknown as U;
 
       return resp;
     }
@@ -50,8 +50,10 @@ export function createClient(
   const del = wrap(_del);
   const getBinary = wrap(_getBinary);
   const postBinary = wrap(_postBinary);
+  const head = wrap(_head);
   return {
     get,
+    head,
     postJSON,
     getBinary,
     postBinary,

@@ -1,6 +1,6 @@
 {
   "name": "@hydrophobefireman/flask-jwt-jskit",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "",
   "main": "dist/flask-jwt-jskit.modern.mjs",
   "scripts": {
