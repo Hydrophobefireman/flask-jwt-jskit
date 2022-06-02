@@ -14,6 +14,7 @@ export const tokens: AuthenticationTokens = {
 export function _headers(tokens: AuthenticationTokens) {
   return {
     Authorization: `Bearer ${tokens.accessToken}`,
+    "X-Access-Token": tokens.accessToken,
     "X-Refresh-Token": tokens.refreshToken,
   };
 }
@@ -59,7 +60,8 @@ export async function _awaitData<T>(
       options.headers,
       await getAuthenticationHeaders()
     );
-    response = await fetch(url, options);
+    const request_fetch = fetch(url, options);
+    response = await request_fetch;
     const responseHeaders = response.headers;
 
     updateTokens(
@@ -68,6 +70,69 @@ export async function _awaitData<T>(
     );
 
     data = type === "none" ? {data: null} : await response[type]();
+  } catch (e) {
+    if (e instanceof DOMException) return {data: {}};
+    console.log(e);
+    data = {
+      error: "A network error occured.",
+      data: null,
+    };
+  }
+
+  return {data, headers: response && response.headers};
+}
+
+//https://javascript.info/fetch-progress
+export async function _streamData<T>(
+  url: string,
+  options?: RequestInit,
+  type?: Exclude<FetchResponse["type"] | "none", "json">,
+  onRead?: ({}: {chunk: Uint8Array; received: number; total: number}) => void
+) {
+  let data: {data: T; error?: string};
+  let response: Response;
+  try {
+    options.headers = Object_assign(
+      options.headers,
+      await getAuthenticationHeaders()
+    );
+    const request_fetch = fetch(url, options);
+    response = await request_fetch;
+    const responseHeaders = response.headers;
+    const len = +responseHeaders.get("content-length");
+    const reader = response.body.getReader();
+
+    let receivedLength = 0;
+    let chunks = [];
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) {
+        break;
+      }
+      chunks.push(value);
+      receivedLength += value.length;
+      if (onRead) {
+        onRead({
+          chunk: value,
+          received: receivedLength,
+          total: len ? len : null,
+        });
+      }
+    }
+    let chunksAll = new Uint8Array(receivedLength);
+    let position = 0;
+    for (let chunk of chunks) {
+      chunksAll.set(chunk, position);
+      position += chunk.length;
+    }
+
+    updateTokens(
+      responseHeaders.get("x-access-token"),
+      responseHeaders.get("x-refresh-token")
+    );
+
+    data = type === "none" ? {data: null} : (chunksAll.buffer as any);
+    // data = type === "none" ? {data: null} : await response[type]();
   } catch (e) {
     if (e instanceof DOMException) return {data: {}};
     console.log(e);

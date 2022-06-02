@@ -7,15 +7,15 @@ import {
   useSharedStateValue,
 } from "statedrive";
 
-import { Routes } from "./http-client/interfaces";
-import { clear } from "./idb";
-import { createClient } from "./http-client";
+import {createClient} from "./http-client";
+import {Routes} from "./http-client/interfaces";
 import {
   clearAuthenticationHeaders,
   getAuthenticationHeaders,
 } from "./http-client/util";
+import {clear} from "./idb";
 
-export class Bridge<T extends { user: string }> {
+export class Bridge<T extends {user: string}> {
   private readonly _state: State<T>;
   private _client: ReturnType<typeof createClient>;
 
@@ -23,7 +23,7 @@ export class Bridge<T extends { user: string }> {
   private _onLogout: () => void;
 
   constructor(authType: T) {
-    this._state = createState({ initialValue: authType });
+    this._state = createState({initialValue: authType});
   }
   setRoutes(r: Routes) {
     this._routes = r;
@@ -43,9 +43,9 @@ export class Bridge<T extends { user: string }> {
     if (!this._client) throw new Error("No HTTP Client created!");
     if (!this._routes || !this._routes.loginRoute)
       throw new Error("No login route found!");
-    const obj = { user, password };
+    const obj = {user, password};
     const request = this._client.postJSON(this._routes.loginRoute, obj);
-    const { controller, result, headers } = request;
+    const {controller, result, headers} = request;
     return {
       controller,
       result: result.then((resp) => {
@@ -68,9 +68,7 @@ export class Bridge<T extends { user: string }> {
     if (!headers.Authorization) return;
     const cl = this.getHttpClient();
 
-    const { result } = cl.get<{ user_data: T }>(
-      this._routes.initialAuthCheckRoute
-    );
+    const {result} = cl.get<{user_data: T}>(this._routes.initialAuthCheckRoute);
     return result.then((js) => {
       if (js.data && js.data.user_data) {
         this.updateState(js.data.user_data);

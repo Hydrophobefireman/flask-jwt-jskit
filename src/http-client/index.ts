@@ -3,6 +3,7 @@ import {
   _del,
   _get,
   _getBinary,
+  _getBinaryStream,
   _head,
   _patchJSON,
   _postBinary,
@@ -51,11 +52,13 @@ export function createClient(
   const getBinary = wrap(_getBinary);
   const postBinary = wrap(_postBinary);
   const head = wrap(_head);
+  const getBinaryStram = wrap(_getBinaryStream);
   return {
     get,
     head,
     postJSON,
     getBinary,
+    getBinaryStram,
     postBinary,
     patchJSON,
     putJSON,
