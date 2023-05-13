@@ -4,7 +4,7 @@ export interface AuthenticationTokens {
 }
 
 export interface AbortableFetchResponse<T> {
-  result: Promise<{ data: T; error?: string }>;
+  result: Promise<{data: T; error?: string}>;
   controller: AbortController;
   headers: Promise<Headers>;
 }

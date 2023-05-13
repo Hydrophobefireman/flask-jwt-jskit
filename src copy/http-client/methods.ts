@@ -12,7 +12,7 @@ function _prepareFetch<T = {}>(
 ) {
   const controller = new AbortController();
   const signal = controller.signal;
-  options.signal = signal;
+  (options || (options = {})).signal = signal;
   const prom =
     mode === "await"
       ? _awaitData(url, options, type)
