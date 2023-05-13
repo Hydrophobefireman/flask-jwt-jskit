@@ -11,7 +11,9 @@ import {NoHTTPClient, NoLoginRoute, NoSessionExists} from "./exceptions";
 import {HttpClient} from "./http-client";
 import {AppAuthState, AuthTokenInjectable, Routes, Session} from "./types";
 
-class AuthContext<T extends {user: string}> implements AuthTokenInjectable {
+export class AuthBridge<T extends {user: string}>
+  implements AuthTokenInjectable
+{
   private _state: State<AppAuthState<T>>;
   public routes: Routes;
   public onLogout: Function;

@@ -1,5 +1,5 @@
 export * from "./idb";
 
-export { Bridge } from "./create-bridge";
+export {AuthBridge} from "./bridge";
 
-export * from "./http-client/interfaces";
+export * from "./http-client";
