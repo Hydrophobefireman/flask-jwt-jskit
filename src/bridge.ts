@@ -56,7 +56,7 @@ class AuthContext<T extends {user: string}> implements AuthTokenInjectable {
   public getAuthenticationHeaders() {
     return this._headers(this.getCurrentAuthenticationScope());
   }
-  public updateAuthenticationHeaders(
+  public updateCurrentUserAuthHeaders(
     accessToken: string,
     refreshToken: string
   ) {
@@ -68,7 +68,15 @@ class AuthContext<T extends {user: string}> implements AuthTokenInjectable {
       return state;
     });
   }
-
+  public updateCurrentUser(updater: StateUpdater<T>) {
+    this.setState((state) => {
+      const newState: Session<T> = {...state._users[state._activeUserIndex]};
+      newState.auth =
+        typeof updater === "function" ? updater(newState.auth) : updater;
+      state._users[state._activeUserIndex] = newState;
+      return state;
+    });
+  }
   public setState(v: StateUpdater<AppAuthState<T>>) {
     return set(this._state, v);
   }
@@ -130,10 +138,13 @@ class AuthContext<T extends {user: string}> implements AuthTokenInjectable {
     };
     const useCurrentAuthState = () => {
       const [state] = useAuthState();
-      return state._users ? state._users[state._activeUserIndex] || null : null;
+      return [
+        state._users ? state._users[state._activeUserIndex] || null : null,
+        (args: T) => this.updateCurrentUser(args),
+      ] as const;
     };
     const useIsLoggedIn = () => {
-      const curr = useCurrentAuthState();
+      const [curr] = useCurrentAuthState();
       return Boolean(curr && curr.auth && curr.auth.user);
     };
     return {
@@ -151,18 +162,16 @@ class AuthContext<T extends {user: string}> implements AuthTokenInjectable {
   }
 
   async syncWithServer() {
-    if (!this._routes || !this._routes.initialAuthCheckRoute) {
+    if (!this.routes || !this.routes.initialAuthCheckRoute) {
       throw new Error("Auth check route not found!");
     }
-    const headers: any = await getAuthenticationHeaders();
+    const headers: any = this.getAuthenticationHeaders();
     if (!headers.Authorization) return;
     const cl = this.getHttpClient();
 
-    const {result} = cl.get<{user_data: T}>(this._routes.initialAuthCheckRoute);
+    const {result} = cl.get<{user_data: T}>(this.routes.initialAuthCheckRoute);
     return result.then((js) => {
-      if (js.data && js.data.user_data) {
-        this.updateState(js.data.user_data);
-      }
+      this.updateCurrentUser(js.data.user_data || (js.data as any));
     });
   }
 }

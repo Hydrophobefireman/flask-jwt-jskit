@@ -46,6 +46,13 @@ export class HttpClient {
         if (js.error == "re-auth") {
           this.onAuthError?.();
         }
+
+        headers.then((h) => {
+          this.authCtx.updateCurrentUserAuthHeaders(
+            h.get("x-access-token"),
+            h.get("x-refresh-token")
+          );
+        });
         return js;
       }),
       did_refresh: true,

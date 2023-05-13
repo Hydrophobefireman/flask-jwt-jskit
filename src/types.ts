@@ -19,7 +19,7 @@ export interface AuthTokenInjectable {
     "X-Access-Token"?: string;
     "X-Refresh-Token"?: string;
   };
-  updateAuthenticationHeaders(accessToken: string, refreshToken: string): void;
+  updateCurrentUserAuthHeaders(accessToken: string, refreshToken: string): void;
 
   refreshTokenRoute: string;
 }
