@@ -24,7 +24,7 @@ export class AuthBridge<T extends {user: string}>
 {
   private _state: State<AppAuthState<T> | null>;
   public routes: Routes;
-  public onLogout: Function;
+  public onLogout: (fn: AppAuthState<T> | null) => void;
   private _client: HttpClient;
   public onAuthUserSwitch: Function;
   private _backingStore: AuthStorage<T>;
@@ -124,10 +124,11 @@ export class AuthBridge<T extends {user: string}>
       throw new NoSessionExists("No such session exists!");
 
     this.setState({activeUserIndex: index, users: [...current.users]});
+    this.onAuthUserSwitch();
   }
   public logoutAll() {
     this.setState(null);
-    this.onLogout?.();
+    this.onLogout?.(null);
   }
   public logoutCurrent() {
     this.setState((curr) => {
@@ -139,6 +140,7 @@ export class AuthBridge<T extends {user: string}>
         return {users: [], activeUserIndex: -1};
       curr.users.splice(curr.activeUserIndex, 1);
       curr.activeUserIndex = -1;
+      this.onLogout?.(curr);
       return curr;
     });
   }
@@ -209,7 +211,7 @@ export class AuthBridge<T extends {user: string}>
     if (this._client) return this._client;
     if (!this.routes || !this.routes.refreshTokenRoute)
       throw new Error("No refresh token route found!");
-    this._client = new HttpClient(this, () => this.onLogout?.());
+    this._client = new HttpClient(this, () => this.onLogout?.(this.getState()));
     return this._client;
   }
   private async _syncWithBackingStore() {
