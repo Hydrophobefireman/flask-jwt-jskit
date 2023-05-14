@@ -197,7 +197,10 @@ export class HttpClient {
       () => this.putJSON<T>(url, body, options)
     );
   }
-  public getBinary(url: RequestInfo | URL, options?: RequestInit) {
+  public getBinary(
+    url: RequestInfo | URL,
+    options?: RequestInit
+  ): AbortableFetchResponse<ArrayBuffer | null> {
     const clone: RequestInit = {...options, method: "GET", body: undefined};
     const controller = this._transformHeadersAndAttachController(clone);
     const response = fetch(url, clone);
@@ -228,7 +231,7 @@ export class HttpClient {
       total: number | null;
     }) => void,
     chunkOptions: {collectChunks?: boolean} = {collectChunks: true}
-  ) {
+  ): AbortableFetchResponse<ArrayBuffer | null> {
     const clone: RequestInit = {...options, method: "GET", body: undefined};
     const controller = this._transformHeadersAndAttachController(clone);
     const response = fetch(url, clone);
@@ -260,14 +263,14 @@ export class HttpClient {
               });
             }
           }
-          if (!chunkOptions.collectChunks) return null;
+          if (!chunkOptions.collectChunks) return {data: new ArrayBuffer(0)};
           let chunksAll = new Uint8Array(receivedLength);
           let position = 0;
           for (let chunk of chunks) {
             chunksAll.set(chunk, position);
             position += chunk.length;
           }
-          return chunksAll.buffer;
+          return {data: chunksAll.buffer};
         })
         .catch(genericResultExtractionErrorHandler),
       did_refresh: false,
