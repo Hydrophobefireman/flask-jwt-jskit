@@ -6,7 +6,7 @@
     "declaration": true,
     "target": "ESNext",
     "rootDir": ".",
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "skipLibCheck": true,

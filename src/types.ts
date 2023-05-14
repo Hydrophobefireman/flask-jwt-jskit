@@ -1,11 +1,11 @@
 export interface Session<T> {
   auth: T;
-  accessToken: string;
-  refreshToken: string;
+  accessToken: string | null;
+  refreshToken: string | null;
 }
 export interface AppAuthState<T> {
-  _activeUserIndex: number;
-  _users: Array<Session<T>>;
+  _activeUserIndex?: number;
+  _users?: Array<Session<T>>;
 }
 export interface Routes {
   loginRoute: string;
@@ -19,7 +19,10 @@ export interface AuthTokenInjectable {
     "X-Access-Token"?: string;
     "X-Refresh-Token"?: string;
   };
-  updateCurrentUserAuthHeaders(accessToken: string, refreshToken: string): void;
+  updateCurrentUserAuthHeaders(
+    accessToken: string | null,
+    refreshToken: string | null
+  ): void;
 
   refreshTokenRoute: string;
 }

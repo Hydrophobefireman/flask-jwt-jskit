@@ -1,13 +1,18 @@
 import {AbortableFetchResponse, AuthTokenInjectable} from "../types";
-const genericResultExtractionErrorHandler = (e: Error) => {
+const genericResultExtractionErrorHandler = (
+  e: Error
+): {
+  data: null;
+  error: string;
+} => {
   console.warn("error occured while parsing:");
   console.warn(e);
   return {data: null, error: "A network error occured"};
 };
 export class HttpClient {
   constructor(
-    private authCtx: AuthTokenInjectable,
-    private onAuthError: Function
+    private authCtx: AuthTokenInjectable | null,
+    private onAuthError?: Function
   ) {}
 
   private _transformHeadersAndAttachController(options: RequestInit) {
@@ -22,25 +27,27 @@ export class HttpClient {
         options.headers = currentHeaders;
       }
     }
+    options.headers ||= new Headers();
     options.signal = controller.signal;
     return controller;
   }
   static get unauthenticatedClient() {
-    return new HttpClient(null, null);
+    return new HttpClient(null, undefined);
   }
   private _wrapResponseWithRetry<T>(
     afr: AbortableFetchResponse<T>,
     retry: () => AbortableFetchResponse<T>
   ): AbortableFetchResponse<T> {
     const {result, headers, controller} = afr;
-
+    if (!this.authCtx) throw new Error("Invalid invocation");
+    const {authCtx} = this;
     return {
       controller,
       headers,
       result: result.then((js) => {
         if (js.error == "refresh") {
-          return this.get<any>(this.authCtx.refreshTokenRoute).result.then(
-            (x) => (x.error ? x : retry().result)
+          return this.get<any>(authCtx.refreshTokenRoute).result.then((x) =>
+            x.error ? x : retry().result
           );
         }
         if (js.error == "re-auth") {
@@ -48,7 +55,7 @@ export class HttpClient {
         }
 
         headers.then((h) => {
-          this.authCtx.updateCurrentUserAuthHeaders(
+          authCtx.updateCurrentUserAuthHeaders(
             h.get("x-access-token"),
             h.get("x-refresh-token")
           );
@@ -62,7 +69,7 @@ export class HttpClient {
   private _bodylessRequest<T>(
     method: string,
     url: RequestInfo | URL,
-    options: RequestInit,
+    options: RequestInit | undefined,
     extractResult: (f: Response) => any,
     retry: () => AbortableFetchResponse<T>
   ): AbortableFetchResponse<T> {
@@ -89,7 +96,7 @@ export class HttpClient {
     method: string,
     url: RequestInfo,
     body: object,
-    options: RequestInit,
+    options: RequestInit | undefined,
     extractResult: (f: Response) => any,
     retry: () => AbortableFetchResponse<T>
   ): AbortableFetchResponse<T> {
@@ -165,7 +172,7 @@ export class HttpClient {
       body,
       options,
       (r) => r.json(),
-      () => this.postJSON<T>(url, options)
+      () => this.postJSON<T>(url, body, options)
     );
   }
   public patchJSON<T>(url: RequestInfo, body: object, options?: RequestInit) {
@@ -175,7 +182,7 @@ export class HttpClient {
       body,
       options,
       (r) => r.json(),
-      () => this.patchJSON<T>(url, options)
+      () => this.patchJSON<T>(url, body, options)
     );
   }
   public putJSON<T>(url: RequestInfo, body: object, options?: RequestInit) {
@@ -185,7 +192,7 @@ export class HttpClient {
       body,
       options,
       (r) => r.json(),
-      () => this.putJSON<T>(url, options)
+      () => this.putJSON<T>(url, body, options)
     );
   }
   public getBinary(url: RequestInfo | URL, options?: RequestInit) {
@@ -195,7 +202,7 @@ export class HttpClient {
     const headers = response.then((resp) => {
       return resp.headers;
     });
-    const ret: AbortableFetchResponse<ArrayBuffer> = {
+    const ret: AbortableFetchResponse<ArrayBuffer | null> = {
       controller,
       headers,
       result: response
@@ -213,7 +220,11 @@ export class HttpClient {
   public getBinaryStream(
     url: RequestInfo | URL,
     options?: RequestInit,
-    onRead?: ({}: {chunk: Uint8Array; received: number; total: number}) => void,
+    onRead?: ({}: {
+      chunk: Uint8Array;
+      received: number;
+      total: number | null;
+    }) => void,
     chunkOptions: {collectChunks?: boolean} = {collectChunks: true}
   ) {
     const clone: RequestInit = {...options, method: "GET", body: undefined};
@@ -228,10 +239,10 @@ export class HttpClient {
       result: response
         .then(async (response) => {
           const responseHeaders = response.headers;
-          const len = +responseHeaders.get("content-length");
-          const reader = response.body.getReader();
+          const len = +responseHeaders.get("content-length")!;
+          const reader = response.body!.getReader();
           let receivedLength = 0;
-          let chunks = [];
+          let chunks: Uint8Array[] = [];
           while (true) {
             const {done, value} = await reader.read();
             if (done) {
@@ -243,7 +254,7 @@ export class HttpClient {
               onRead({
                 chunk: value,
                 received: receivedLength,
-                total: len ? len : null,
+                total: len || null,
               });
             }
           }
