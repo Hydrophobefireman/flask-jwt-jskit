@@ -152,10 +152,9 @@ export class AuthBridge<T extends {user: string}>
 
     const obj = {user, password};
 
-    const request = this._client.postJSON<Session<T>["auth"]>(
-      this.routes.loginRoute,
-      obj
-    );
+    const request = HttpClient.unauthenticatedClient.postJSON<
+      Session<T>["auth"]
+    >(this.routes.loginRoute, obj);
     const {controller, result, headers} = request;
     return {
       controller,
@@ -166,17 +165,17 @@ export class AuthBridge<T extends {user: string}>
           const h = await headers;
           const accessToken = h.get("x-access-token");
           const refreshToken = h.get("x-refresh-token");
-          this.setState((curr) => {
-            if (!curr || !curr.users || curr.activeUserIndex == null) {
-              curr ||= {};
-              curr.users ||= [];
-              curr.activeUserIndex ??= -1;
-            }
-            if (curr.users.find((x) => x.auth.user == data.user)) {
+          this.setState((_curr) => {
+            const curr: typeof _curr = {
+              activeUserIndex: _curr?.activeUserIndex ?? -1,
+              users: _curr?.users?.slice() || [],
+            };
+
+            if (curr!.users!.find((x) => x.auth.user == data.user)) {
               return curr;
             }
-            curr.users.push({accessToken, refreshToken, auth: data});
-            curr.activeUserIndex = curr.users.length - 1;
+            curr.users!.push({accessToken, refreshToken, auth: data});
+            curr.activeUserIndex = curr.users!.length - 1;
             return curr;
           });
         }
