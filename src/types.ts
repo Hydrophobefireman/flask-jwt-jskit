@@ -35,7 +35,8 @@ export interface AbortableFetchResponse<T> {
 }
 
 export interface AuthStorage<T> {
+  state: "READY" | "WAIT";
   onAuthStateChange(newAuth: AppAuthState<T> | null): any;
-
+  wait(): Promise<unknown>;
   retrieveAuth(): Promise<AppAuthState<T> | null>;
 }

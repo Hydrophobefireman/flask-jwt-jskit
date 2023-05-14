@@ -220,6 +220,7 @@ export class AuthBridge<T extends {user: string}>
     if (!this.routes || !this.routes.initialAuthCheckRoute) {
       throw new Error("Auth check route not found!");
     }
+    if (this._backingStore) await this._backingStore.wait();
     const headers: any = this.getAuthenticationHeaders();
     if (!headers.Authorization) return;
     const cl = this.getHttpClient();
