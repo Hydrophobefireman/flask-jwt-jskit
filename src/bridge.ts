@@ -43,13 +43,13 @@ export class AuthBridge<T extends {user: string}>
   private _getCurrentAuth() {
     const state = this.getState();
     return (
-      state && state._users?.[state._activeUserIndex ?? -1]
+      state && state.users?.[state.activeUserIndex ?? -1]
     ); /* -1 == undefined == needs to select */
   }
 
   constructor() {
     this._state = createState<AppAuthState<T>>({
-      initialValue: {_activeUserIndex: 0, _users: []},
+      initialValue: {activeUserIndex: 0, users: []},
     });
     subscribe(this._state, (old, n) => {
       const backingStore = this._backingStore;
@@ -88,26 +88,26 @@ export class AuthBridge<T extends {user: string}>
     refreshToken: string | null
   ) {
     this.setState((state) => {
-      if (!state?._users || state._activeUserIndex == null)
+      if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
-      if (!state._users[state._activeUserIndex]) {
+      if (!state.users[state.activeUserIndex]) {
         return state;
       }
-      const newState: Session<T> = {...state._users[state._activeUserIndex]};
+      const newState: Session<T> = {...state.users[state.activeUserIndex]};
       if (accessToken != null) newState.accessToken = accessToken || null;
       if (refreshToken != null) newState.refreshToken = refreshToken || null;
-      state._users[state._activeUserIndex] = newState;
+      state.users[state.activeUserIndex] = newState;
       return state;
     });
   }
   public updateCurrentUser(updater: StateUpdater<T>) {
     this.setState((state) => {
-      if (!state?._users || state._activeUserIndex == null)
+      if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
-      const newState: Session<T> = {...state._users[state._activeUserIndex]};
+      const newState: Session<T> = {...state.users[state.activeUserIndex]};
       newState.auth =
         typeof updater === "function" ? updater(newState.auth) : updater;
-      state._users[state._activeUserIndex] = newState;
+      state.users[state.activeUserIndex] = newState;
       return state;
     });
   }
@@ -118,12 +118,12 @@ export class AuthBridge<T extends {user: string}>
     const current = this.getState();
     if (
       current == null ||
-      current._users?.length == null ||
-      current._users.length <= index
+      current.users?.length == null ||
+      current.users.length <= index
     )
       throw new NoSessionExists("No such session exists!");
 
-    this.setState({_activeUserIndex: index, _users: [...current._users]});
+    this.setState({activeUserIndex: index, users: [...current.users]});
   }
   public logoutAll() {
     this.setState(null);
@@ -132,13 +132,13 @@ export class AuthBridge<T extends {user: string}>
   public logoutCurrent() {
     this.setState((curr) => {
       if (
-        !curr?._users ||
-        curr._activeUserIndex == null ||
-        curr._activeUserIndex == -1
+        !curr?.users ||
+        curr.activeUserIndex == null ||
+        curr.activeUserIndex == -1
       )
-        return {_users: [], _activeUserIndex: -1};
-      curr._users.splice(curr._activeUserIndex, 1);
-      curr._activeUserIndex = -1;
+        return {users: [], activeUserIndex: -1};
+      curr.users.splice(curr.activeUserIndex, 1);
+      curr.activeUserIndex = -1;
       return curr;
     });
   }
@@ -165,16 +165,16 @@ export class AuthBridge<T extends {user: string}>
           const accessToken = h.get("x-access-token");
           const refreshToken = h.get("x-refresh-token");
           this.setState((curr) => {
-            if (!curr || !curr._users || curr._activeUserIndex == null) {
+            if (!curr || !curr.users || curr.activeUserIndex == null) {
               curr ||= {};
-              curr._users ||= [];
-              curr._activeUserIndex ??= -1;
+              curr.users ||= [];
+              curr.activeUserIndex ??= -1;
             }
-            if (curr._users.find((x) => x.auth.user == data.user)) {
+            if (curr.users.find((x) => x.auth.user == data.user)) {
               return curr;
             }
-            curr._users.push({accessToken, refreshToken, auth: data});
-            curr._activeUserIndex = curr._users.length - 1;
+            curr.users.push({accessToken, refreshToken, auth: data});
+            curr.activeUserIndex = curr.users.length - 1;
             return curr;
           });
         }
@@ -185,13 +185,13 @@ export class AuthBridge<T extends {user: string}>
   }
 
   public getHooks() {
-    const useAuthState = () => {
+    const useAllAuthState = () => {
       return useSharedState(this._state);
     };
     const useCurrentAuthState = () => {
-      const [state] = useAuthState();
+      const [state] = useAllAuthState();
       return [
-        state?._users ? state._users[state!._activeUserIndex!] || null : null,
+        state?.users ? state.users[state!.activeUserIndex!] || null : null,
         (args: T) => this.updateCurrentUser(args),
       ] as const;
     };
@@ -200,7 +200,7 @@ export class AuthBridge<T extends {user: string}>
       return Boolean(curr && curr.auth && curr.auth.user);
     };
     return {
-      useAuthState,
+      useAllAuthState,
       useCurrentAuthState,
       useIsLoggedIn,
     };

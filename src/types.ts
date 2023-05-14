@@ -4,8 +4,8 @@ export interface Session<T> {
   refreshToken: string | null;
 }
 export interface AppAuthState<T> {
-  _activeUserIndex?: number;
-  _users?: Array<Session<T>>;
+  activeUserIndex?: number;
+  users?: Array<Session<T>>;
 }
 export interface Routes {
   loginRoute: string;
