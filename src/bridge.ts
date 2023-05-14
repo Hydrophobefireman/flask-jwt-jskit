@@ -19,9 +19,15 @@ import {
   Session,
 } from "./types";
 
-function cloneCurrentState<T>(x: AppAuthState<T> | null | undefined) {
-  if (!x) return x;
-  const curr: Required<AppAuthState<T>> = {
+function cloneCurrentState<T>(
+  x: AppAuthState<T> | null | undefined
+): Required<AppAuthState<T>> {
+  if (!x)
+    return {
+      activeUserIndex: -1,
+      users: [],
+    };
+  const curr = {
     activeUserIndex: x?.activeUserIndex ?? -1,
     users: x.users?.slice() || [],
   };
