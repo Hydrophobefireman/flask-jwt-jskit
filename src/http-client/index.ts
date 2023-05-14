@@ -54,12 +54,14 @@ export class HttpClient {
           this.onAuthError?.();
         }
 
-        headers.then((h) => {
-          authCtx.updateCurrentUserAuthHeaders(
-            h.get("x-access-token"),
-            h.get("x-refresh-token")
-          );
-        });
+        headers
+          .then((h) => {
+            authCtx.updateCurrentUserAuthHeaders(
+              h.get("x-access-token"),
+              h.get("x-refresh-token")
+            );
+          })
+          .catch(() => {});
         return js;
       }),
       did_refresh: true,
