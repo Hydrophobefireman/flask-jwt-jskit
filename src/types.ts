@@ -33,3 +33,9 @@ export interface AbortableFetchResponse<T> {
   headers: Promise<Headers>;
   did_refresh: boolean;
 }
+
+export interface AuthStorage<T> {
+  onAuthStateChange(newAuth: AppAuthState<T> | null): any;
+
+  retrieveAuth(): Promise<AppAuthState<T> | null>;
+}
