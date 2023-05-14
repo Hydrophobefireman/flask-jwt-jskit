@@ -19,6 +19,14 @@ import {
   Session,
 } from "./types";
 
+function cloneCurrentState<T>(x: AppAuthState<T> | null | undefined) {
+  if (!x) return x;
+  const curr: Required<AppAuthState<T>> = {
+    activeUserIndex: x?.activeUserIndex ?? -1,
+    users: x.users?.slice() || [],
+  };
+  return curr;
+}
 export class AuthBridge<T extends {user: string}>
   implements AuthTokenInjectable
 {
@@ -87,7 +95,8 @@ export class AuthBridge<T extends {user: string}>
     accessToken: string | null,
     refreshToken: string | null
   ) {
-    this.setState((state) => {
+    this.setState((_curr) => {
+      const state = cloneCurrentState(_curr);
       if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
       if (!state.users[state.activeUserIndex]) {
@@ -101,7 +110,8 @@ export class AuthBridge<T extends {user: string}>
     });
   }
   public updateCurrentUser(updater: StateUpdater<T>) {
-    this.setState((state) => {
+    this.setState((_state) => {
+      const state = cloneCurrentState(_state);
       if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
       const newState: Session<T> = {...state.users[state.activeUserIndex]};
@@ -115,15 +125,17 @@ export class AuthBridge<T extends {user: string}>
     return set(this._state, v);
   }
   public switchAuthenticatedUser(index: number) {
-    const current = this.getState();
-    if (
-      current == null ||
-      current.users?.length == null ||
-      current.users.length <= index
-    )
-      throw new NoSessionExists("No such session exists!");
+    this.setState((curr) => {
+      const current = cloneCurrentState(curr);
+      if (
+        current == null ||
+        current.users?.length == null ||
+        current.users.length <= index
+      )
+        throw new NoSessionExists("No such session exists!");
 
-    this.setState({activeUserIndex: index, users: [...current.users]});
+      return {activeUserIndex: index, users: [...current.users]};
+    });
     this.onAuthUserSwitch();
   }
   public logoutAll() {
@@ -131,7 +143,8 @@ export class AuthBridge<T extends {user: string}>
     this.onLogout?.(null);
   }
   public logoutCurrent() {
-    this.setState((curr) => {
+    this.setState((_curr) => {
+      const curr = cloneCurrentState(_curr);
       if (
         !curr?.users ||
         curr.activeUserIndex == null ||
@@ -166,10 +179,7 @@ export class AuthBridge<T extends {user: string}>
           const accessToken = h.get("x-access-token");
           const refreshToken = h.get("x-refresh-token");
           this.setState((_curr) => {
-            const curr: typeof _curr = {
-              activeUserIndex: _curr?.activeUserIndex ?? -1,
-              users: _curr?.users?.slice() || [],
-            };
+            const curr = cloneCurrentState(_curr)!;
 
             if (curr!.users!.find((x) => x.auth.user == data.user)) {
               return curr;
