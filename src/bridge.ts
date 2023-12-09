@@ -42,7 +42,7 @@ export class AuthBridge<T extends {user: string}>
   private _client: HttpClient;
   public onAuthUserSwitch: Function;
   private _backingStore: AuthStorage<T>;
-
+  private __backingStoreInitPromise: Promise<unknown> = Promise.resolve();
   public withBackingStore(s: AuthStorage<T>) {
     this._backingStore = s;
     this._syncWithBackingStore();
@@ -101,8 +101,8 @@ export class AuthBridge<T extends {user: string}>
     accessToken: string | null,
     refreshToken: string | null
   ) {
-    this.setState((_curr) => {
-      const state = cloneCurrentState(_curr);
+    this.setState((_curr: AppAuthState<T>) => {
+      const state = cloneCurrentState<T>(_curr);
       if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
       if (!state.users[state.activeUserIndex]) {
@@ -117,7 +117,7 @@ export class AuthBridge<T extends {user: string}>
   }
   public updateCurrentUser(updater: StateUpdater<T>) {
     this.setState((_state) => {
-      const state = cloneCurrentState(_state);
+      const state = cloneCurrentState<T>(_state);
       if (!state?.users || state.activeUserIndex == null)
         throw new Error("Current user does not exist!");
       const newState: Session<T> = {...state.users[state.activeUserIndex]};
@@ -230,14 +230,19 @@ export class AuthBridge<T extends {user: string}>
     return this._client;
   }
   private async _syncWithBackingStore() {
-    if (this._backingStore)
-      this.setState(await this._backingStore.retrieveAuth());
+    if (this._backingStore) {
+      const res = (this.__backingStoreInitPromise =
+        this._backingStore.retrieveAuth());
+      this.setState(await res);
+    }
   }
   async syncWithServer() {
     if (!this.routes || !this.routes.initialAuthCheckRoute) {
       throw new Error("Auth check route not found!");
     }
     if (this._backingStore) await this._backingStore.wait();
+    await this.__backingStoreInitPromise;
+    this.__backingStoreInitPromise = Promise.resolve();
     const headers: any = this.getAuthenticationHeaders();
     if (!headers.Authorization) return;
     const cl = this.getHttpClient();
